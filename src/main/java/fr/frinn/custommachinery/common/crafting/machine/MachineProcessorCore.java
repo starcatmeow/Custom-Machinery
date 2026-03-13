@@ -131,10 +131,7 @@ public class MachineProcessorCore implements ISyncableStuff {
         for(RequirementWithFunction requirement : this.requirementList.getInventoryConditions()) {
             CraftingResult result = requirement.process(this.tile.getComponentManager(), this.context);
             if(!result.isSuccess()) {
-                if(this.currentRecipe != null && this.currentRecipe.value().shouldResetOnError())
-                    this.reset();
-                else
-                    this.setError(result.getMessage());
+                this.handleRequirementError(result);
                 return;
             }
         }
@@ -142,10 +139,7 @@ public class MachineProcessorCore implements ISyncableStuff {
         for(RequirementWithFunction requirement : this.requirementList.getWorldConditions()) {
             CraftingResult result = requirement.process(this.tile.getComponentManager(), this.context);
             if(!result.isSuccess()) {
-                if(this.currentRecipe != null && this.currentRecipe.value().shouldResetOnError())
-                    this.reset();
-                else
-                    this.setError(result.getMessage());
+                this.handleRequirementError(result);
                 return;
             }
         }
@@ -172,10 +166,7 @@ public class MachineProcessorCore implements ISyncableStuff {
             if(!requirement.requirement().shouldSkip(this.tile.getComponentManager(), this.rand, this.context)) {
                 CraftingResult result = requirement.process(this.tile.getComponentManager(), this.context);
                 if(!result.isSuccess()) {
-                    if(this.currentRecipe != null && this.currentRecipe.value().shouldResetOnError())
-                        this.reset();
-                    else
-                        this.setError(result.getMessage());
+                    this.handleRequirementError(result);
                     return;
                 }
             }
@@ -195,10 +186,7 @@ public class MachineProcessorCore implements ISyncableStuff {
             if(!requirement.requirement().shouldSkip(this.tile.getComponentManager(), this.rand, this.context)) {
                 CraftingResult result = requirement.process(this.tile.getComponentManager(), this.context);
                 if(!result.isSuccess()) {
-                    if(this.currentRecipe != null && this.currentRecipe.value().shouldResetOnError())
-                        this.reset();
-                    else
-                        this.setError(result.getMessage());
+                    this.handleRequirementError(result);
                     return;
                 }
             }
@@ -234,6 +222,13 @@ public class MachineProcessorCore implements ISyncableStuff {
         this.error = error;
         this.processor.setError(error);
         this.status = MachineStatus.ERRORED;
+    }
+
+    private void handleRequirementError(CraftingResult result) {
+        if(this.recipeProgressTime <= 0 || (this.currentRecipe != null && this.currentRecipe.value().shouldResetOnError()))
+            this.reset();
+        else
+            this.setError(result.getMessage());
     }
 
     public void reset() {
